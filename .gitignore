@@ -42,3 +42,30 @@ Thumbs.db
 # Temporary files
 .context_summary_*.md
 
+# Development/Planning Documents (Internal)
+CLAUDE.md
+IMPLEMENTATION_PLAN.md
+UPGRADE.md
+.claude/
+.claudesync/
+
+# Platform-specific launchers
+start.bat
+
+# Node/Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.production.local
+
+# Python build artifacts
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# State files (may contain sensitive project data)
+backend/.state/
+*.state.json
+

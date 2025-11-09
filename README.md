@@ -1,16 +1,28 @@
-# Kimi Writing Agent
+# Kimi Multi-Agent Novel Writing System
 
-An autonomous agent powered by the **kimi-k2-thinking** model for creating novels, books, and short story collections.
+An intelligent multi-agent system powered by **Moonshot AI's kimi-k2-thinking model** for autonomous novel generation with a modern web interface.
 
 ## Features
 
-- 🤖 **Autonomous Writing**: The agent plans and executes creative writing tasks independently
-- 📚 **Multiple Formats**: Create novels, books, or short story collections
-- ⚡ **Real-Time Streaming**: See the agent's reasoning and writing appear as it's generated
-- 💾 **Smart Context Management**: Automatically compresses context when approaching token limits
-- 🔄 **Recovery Mode**: Resume interrupted work from saved context summaries
-- 📊 **Token Monitoring**: Real-time tracking of token usage with automatic optimization
-- 🛠️ **Tool Use**: Agent can create projects, write files, and manage its workspace
+### Multi-Agent Architecture
+- 🎯 **Four-Phase Workflow**: Planning → Plan Critique → Writing → Write Critique
+- 🧠 **Specialized Agents**: Each phase has a dedicated agent with specific expertise
+- ✅ **Quality Control**: Built-in critique and revision loops for plan and chapters
+- 👤 **Human-in-the-Loop**: Optional approval checkpoints at configurable points
+
+### Modern Web Interface
+- 🖥️ **Real-Time Dashboard**: Monitor progress, phase transitions, and token usage
+- 📡 **WebSocket Streaming**: See agent reasoning and content as it's generated
+- 📁 **File Browser**: View and download all generated materials
+- ⚙️ **Flexible Configuration**: Customize everything from the web UI
+- 📊 **Live Statistics**: Track iterations, word count, and generation time
+
+### Smart Features
+- 💾 **Context Compression**: Automatically manages token limits
+- 🎨 **Writing Samples**: Optionally guide the AI's writing style
+- 📝 **Custom Prompts**: Fully editable system prompts for each agent
+- 🔄 **Pause/Resume**: Control generation with real-time controls
+- 💾 **State Persistence**: Never lose progress, resume anytime
 
 ## Installation
 
@@ -55,156 +67,274 @@ MOONSHOT_API_KEY=your-api-key-here
 MOONSHOT_BASE_URL=https://api.moonshot.ai/v1
 ```
 
-## Usage
+## Quick Start
 
-### Fresh Start
+### Option 1: Web Interface (Recommended)
 
-Run with an inline prompt:
+1. **Start the backend server:**
 ```bash
-# Using uv (recommended)
-uv run kimi-writer.py "Create a collection of 5 sci-fi short stories about AI"
+cd backend
+python main.py
+```
+The backend will start on `http://localhost:8000`
 
-# Or using python directly
-python kimi-writer.py "Create a collection of 5 sci-fi short stories about AI"
+2. **Start the frontend (in a new terminal):**
+```bash
+cd frontend
+npm install  # First time only
+npm run dev
+```
+The frontend will start on `http://localhost:5173`
+
+3. **Open your browser to `http://localhost:5173`**
+
+4. **Create a new project:**
+   - Click "Start New Project"
+   - Fill in your novel details (theme, length, genre)
+   - Optionally add a writing sample or custom style
+   - Configure approval checkpoints
+   - Click "Create Project"
+
+5. **Monitor generation:**
+   - Watch real-time progress in the dashboard
+   - See live streaming output as the agent writes
+   - Review and download generated files
+   - Approve plans and chapters as needed
+
+### Option 2: Command-Line Interface
+
+For those who prefer the terminal:
+
+```bash
+python -m backend.cli --theme "Your novel theme" --length novel
 ```
 
-Or run interactively:
+See all CLI options:
 ```bash
-uv run kimi-writer.py
-# or: python kimi-writer.py
-```
-Then enter your prompt when asked.
-
-### Recovery Mode
-
-If the agent is interrupted or you want to continue previous work:
-```bash
-uv run kimi-writer.py --recover output/my_project/.context_summary_20250107_143022.md
-# or: python kimi-writer.py --recover output/my_project/.context_summary_20250107_143022.md
+python -m backend.cli --help
 ```
 
 ## How It Works
 
-### The Agent's Tools
+### Multi-Agent Architecture
 
-The agent has access to three tools:
+The system uses four specialized agents working in sequence:
 
-1. **create_project**: Creates a project folder to organize the writing
-2. **write_file**: Writes markdown files with three modes:
-   - `create`: Creates a new file (fails if exists)
-   - `append`: Adds content to an existing file
-   - `overwrite`: Replaces the entire file content
-3. **compress_context**: Automatically triggered to manage context size
+1. **Planning Agent (Story Architect)**
+   - Creates comprehensive story summary
+   - Develops detailed character profiles (dramatis personae)
+   - Designs three-act story structure
+   - Creates chapter-by-chapter plot outline
 
-### The Agentic Loop
+2. **Plan Critic Agent (Story Editor)**
+   - Reviews all planning materials
+   - Provides structured feedback
+   - Requests revisions to improve quality
+   - Approves plan when ready (or auto-approves after max iterations)
 
-1. The agent receives your prompt
-2. It reasons about the task using kimi-k2-thinking
-3. It decides which tools to call and executes them
-4. It reviews the results and continues until the task is complete
-5. Maximum 300 iterations with automatic context compression
+3. **Writing Agent (Creative Writer)**
+   - Writes chapters based on approved plan
+   - Optionally follows provided writing style
+   - Maintains consistency with characters and plot
+   - Reviews previous chapters for continuity
 
-### Context Management
+4. **Write Critic Agent (Chapter Editor)**
+   - Reviews each completed chapter
+   - Checks for quality, consistency, pacing
+   - Requests revisions if needed
+   - Approves chapter or auto-approves after max iterations
 
-- **Token Limit**: 200,000 tokens
-- **Auto-Compression**: Triggers at 180,000 tokens (90% of limit)
-- **Backups**: Automatic context summaries every 50 iterations
-- **Recovery**: All summaries saved with timestamps for resumption
+### The Workflow
+
+```
+1. PLANNING Phase
+   └─> Story Architect creates plan materials
+
+2. PLAN_CRITIQUE Phase
+   └─> Story Editor reviews and refines plan
+   └─> [Optional approval checkpoint]
+
+3. WRITING Phase
+   └─> Creative Writer writes each chapter
+   └─> [Optional approval checkpoint per chapter]
+
+4. WRITE_CRITIQUE Phase
+   └─> Chapter Editor reviews and refines chapter
+   └─> Loop back to WRITING for next chapter
+
+5. COMPLETE
+   └─> All chapters written and approved
+```
+
+### Smart Features
+
+- **Token Management**: Automatic compression at 90% of 200K token limit
+- **State Persistence**: Never lose progress, resume anytime
+- **Real-time Updates**: WebSocket streaming of all agent activity
+- **Quality Control**: Built-in critique and revision loops
+- **Flexible Checkpoints**: Approve plans/chapters or run fully autonomous
 
 ## Project Structure
 
 ```
-kimi-writer/
-├── kimi-writer.py        # Main agent
-├── tools/
-│   ├── __init__.py       # Tool registry
-│   ├── writer.py         # File writing tool
-│   ├── project.py        # Project management tool
-│   └── compression.py    # Context compression tool
-├── utils.py              # Utilities (token counting, etc.)
-├── requirements.txt      # Python dependencies
-├── env.example           # Example configuration
-├── .gitignore            # Git ignore rules
-└── README.md             # This file
-
-# Generated during use:
-output/                   # All AI-generated projects go here
-├── your_project_name/    # Created by the agent
-│   ├── chapter_01.md     # Written by the agent
-│   ├── chapter_02.md
-│   └── .context_summary_*.md  # Auto-saved context summaries
-└── another_project/
-    └── ...
+kimi-writer-tau/
+├── start.py              # Main launcher (starts both servers)
+├── start.bat             # Windows launcher
+├── backend/              # Backend server
+│   ├── main.py          # FastAPI application
+│   ├── cli.py           # Command-line interface
+│   ├── agent_loop.py    # Multi-agent orchestration
+│   ├── config.py        # Configuration management
+│   ├── state_manager.py # State persistence
+│   ├── system_prompts.py# Agent prompts
+│   ├── agents/          # Four specialized agents
+│   │   ├── base_agent.py
+│   │   ├── planning_agent.py
+│   │   ├── plan_critic_agent.py
+│   │   ├── writing_agent.py
+│   │   └── write_critic_agent.py
+│   ├── tools/           # 22 phase-specific tools
+│   │   ├── planning_tools.py
+│   │   ├── plan_critique_tools.py
+│   │   ├── writing_tools.py
+│   │   └── write_critique_tools.py
+│   ├── api/             # REST API
+│   │   ├── routes.py
+│   │   ├── schemas.py
+│   │   └── websocket.py
+│   └── utils/
+│       ├── token_counter.py
+│       └── file_helpers.py
+├── frontend/            # React web interface
+│   ├── src/
+│   │   ├── pages/      # Home, ProjectBrowser, NovelWorkspace
+│   │   ├── components/ # ProgressDashboard, StreamingOutput, etc.
+│   │   ├── services/   # API & WebSocket clients
+│   │   ├── hooks/      # React hooks
+│   │   └── store/      # Zustand state management
+│   └── package.json
+├── output/             # Generated novels
+│   └── [project_id]/
+│       ├── summary.txt
+│       ├── dramatis_personae.txt
+│       ├── story_structure.txt
+│       ├── plot_outline.txt
+│       └── chapter_*.txt
+├── requirements.txt    # Python dependencies
+└── .env               # API keys (create from env.example)
 ```
-
-## Examples
-
-### Example 1: Novel
-```bash
-uv run kimi-writer.py "Write a mystery novel set in Victorian London with 10 chapters"
-```
-
-### Example 2: Short Story Collection
-```bash
-uv run kimi-writer.py "Create 7 interconnected sci-fi short stories exploring the theme of memory"
-```
-
-### Example 3: Book
-```bash
-uv run kimi-writer.py "Write a comprehensive guide to Python programming with 15 chapters"
-```
-
-## Advanced Features
-
-### Real-Time Streaming
-Watch the agent think and write in real-time:
-- 🧠 **Reasoning Stream**: See the agent's thought process as it plans
-- 💬 **Content Stream**: Watch stories being written character by character
-- 🔧 **Tool Call Progress**: Live updates when generating large content (shows character/word count)
-- ⚡ **No Waiting**: Immediate feedback - no more staring at a blank screen
-
-### Iteration Counter
-The agent displays its progress: `Iteration X/300`
-
-### Token Monitoring
-Real-time token usage: `Current tokens: 45,234/200,000 (22.6%)`
-
-### Graceful Interruption
-Press `Ctrl+C` to interrupt. The agent will save the current context for recovery.
 
 ## Tips for Best Results
 
-1. **Be Specific**: Clear prompts get better results
-   - Good: "Create a 5-chapter romance novel set in modern Tokyo"
+### Project Configuration
+1. **Be Specific**: Clear themes get better results
+   - Good: "A detective investigating a murder in Victorian London"
    - Less good: "Write something interesting"
 
-2. **Let It Work**: The agent works autonomously - it will plan and execute the full task
+2. **Choose Length Wisely**:
+   - Flash Fiction (1 chapter) - Quick tests
+   - Short Story (3 chapters) - Complete narratives
+   - Novel (12 chapters) - Full-length novels
 
-3. **Recovery is Easy**: If interrupted, just use the `--recover` flag with the latest context summary
+3. **Use Writing Samples**: Provide a sample to guide the AI's style
+   - Can use built-in samples or paste your own
+   - At least 100 characters for meaningful effect
 
-4. **Check Progress**: Generated files appear in real-time in the project folder
+4. **Set Approval Checkpoints**:
+   - Enable plan approval to review before writing starts
+   - Enable chapter approval for granular control
+   - Disable both for fully autonomous operation
+
+### Monitoring Generation
+- Watch the **Progress Dashboard** for phase and chapter tracking
+- Check **Live Output** to see content as it's written
+- View **Files** to read completed materials
+- Monitor **Token Usage** to see context consumption
 
 ## Troubleshooting
 
 ### "MOONSHOT_API_KEY environment variable not set"
-Make sure you have created a `.env` file in the project root with your API key:
-```bash
-MOONSHOT_API_KEY=your-actual-api-key-here
-```
+1. Copy `env.example` to `.env`
+2. Add your API key: `MOONSHOT_API_KEY=your-key-here`
+3. Get your key from https://platform.moonshot.cn/
 
 ### "401 Unauthorized" or Authentication errors
-- Verify your API key is correct in the `.env` file
-- Make sure you're using the correct base URL: `https://api.moonshot.ai/v1`
-- Get your API key from: https://platform.moonshot.cn/
+- Verify API key in `.env` file
+- Check base URL is correct (default: `https://api.moonshot.cn/v1`)
+- Ensure `.env` file is in the project root
 
-### "Error creating project folder"
-Check write permissions in the current directory
+### Frontend won't start
+```powershell
+cd frontend
+npm install
+npm run dev
+```
 
-### Agent seems stuck
-The agent can run up to 300 iterations. For very complex tasks, this is normal. Check the project folder to see progress.
+### Backend won't start
+```powershell
+pip install -r requirements.txt
+cd backend
+python main.py
+```
 
-### Token limit issues
-The agent automatically compresses context at 180K tokens. If you see compression messages, the system is working correctly.
+### WebSocket connection issues
+- Ensure backend is running on port 8000
+- Check browser console for errors
+- Refresh the page to reconnect
+
+### Port already in use
+- Backend uses port 8000
+- Frontend uses port 5173
+- Change ports in `backend/main.py` or `frontend/vite.config.js`
+
+## Working in VS Code (Windows)
+
+### Recommended Setup
+
+1. **Install Extensions**:
+   - Python (Microsoft)
+   - Pylance
+   - ESLint
+   - Tailwind CSS IntelliSense
+
+2. **Open Terminal in VS Code** (`Ctrl+` `)
+
+3. **Start the System**:
+   ```powershell
+   python start.py
+   ```
+
+4. **Or start servers separately in split terminal**:
+   ```powershell
+   # Terminal 1
+   cd backend
+   python main.py
+
+   # Terminal 2
+   cd frontend
+   npm run dev
+   ```
+
+5. **Use VS Code's built-in browser** or open http://localhost:5173
+
+### VS Code Tasks (Optional)
+
+Create `.vscode/tasks.json`:
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Kimi Writer",
+      "type": "shell",
+      "command": "python start.py",
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+Then run with `Ctrl+Shift+B` or Terminal → Run Task
 
 ## Technical Details
 
