@@ -2,8 +2,8 @@
 """
 Kimi Writing Agent - An autonomous agent for creative writing tasks.
 
-This agent uses the kimi-k2-thinking model to create novels, books, 
-and short story collections based on user prompts.
+This agent uses the kimi-k2-thinking model to create novels and books
+based on user prompts.
 """
 
 import os
@@ -62,13 +62,13 @@ def get_user_input() -> tuple[str, bool]:
         Tuple of (prompt/context, is_recovery_mode)
     """
     parser = argparse.ArgumentParser(
-        description="Kimi Writing Agent - Create novels, books, and short stories",
+        description="Kimi Writing Agent - Create novels and books",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Fresh start with inline prompt
-  python kimi-writer.py "Create a collection of sci-fi short stories"
-  
+  python kimi-writer.py "Create a sci-fi novel with 12 chapters"
+
   # Recovery mode from previous context
   python kimi-writer.py --recover my_project/.context_summary_20250107_143022.md
         """
@@ -101,7 +101,7 @@ Examples:
     print("Kimi Writing Agent")
     print("=" * 60)
     print("\nEnter your writing request (or 'quit' to exit):")
-    print("Example: Create a collection of 15 sci-fi short stories\n")
+    print("Example: Create a sci-fi novel with 15 chapters\n")
     
     prompt = input("> ").strip()
     

@@ -1,11 +1,11 @@
 # Kimi Writing Agent
 
-An autonomous agent powered by the **kimi-k2-thinking** model for creating novels, books, and short story collections.
+An autonomous agent powered by the **kimi-k2-thinking** model for creating novels and books.
 
 ## Features
 
 - 🤖 **Autonomous Writing**: The agent plans and executes creative writing tasks independently
-- 📚 **Multiple Formats**: Create novels, books, or short story collections
+- 📚 **Novel Writing**: Create complete novels with multiple chapters
 - ⚡ **Real-Time Streaming**: See the agent's reasoning and writing appear as it's generated
 - 💾 **Smart Context Management**: Automatically compresses context when approaching token limits
 - 🔄 **Recovery Mode**: Resume interrupted work from saved context summaries
@@ -62,10 +62,10 @@ MOONSHOT_BASE_URL=https://api.moonshot.ai/v1
 Run with an inline prompt:
 ```bash
 # Using uv (recommended)
-uv run kimi-writer.py "Create a collection of 5 sci-fi short stories about AI"
+uv run kimi-writer.py "Create a sci-fi novel with 12 chapters about AI"
 
 # Or using python directly
-python kimi-writer.py "Create a collection of 5 sci-fi short stories about AI"
+python kimi-writer.py "Create a sci-fi novel with 12 chapters about AI"
 ```
 
 Or run interactively:
@@ -128,28 +128,29 @@ kimi-writer/
 └── README.md             # This file
 
 # Generated during use:
-output/                   # All AI-generated projects go here
-├── your_project_name/    # Created by the agent
+output/                   # All AI-generated novels go here
+├── your_novel_name/      # Created by the agent
 │   ├── chapter_01.md     # Written by the agent
 │   ├── chapter_02.md
+│   ├── chapter_03.md
 │   └── .context_summary_*.md  # Auto-saved context summaries
-└── another_project/
+└── another_novel/
     └── ...
 ```
 
 ## Examples
 
-### Example 1: Novel
+### Example 1: Mystery Novel
 ```bash
 uv run kimi-writer.py "Write a mystery novel set in Victorian London with 10 chapters"
 ```
 
-### Example 2: Short Story Collection
+### Example 2: Science Fiction Novel
 ```bash
-uv run kimi-writer.py "Create 7 interconnected sci-fi short stories exploring the theme of memory"
+uv run kimi-writer.py "Create a sci-fi novel with 12 chapters exploring the theme of memory and identity"
 ```
 
-### Example 3: Book
+### Example 3: Non-Fiction Book
 ```bash
 uv run kimi-writer.py "Write a comprehensive guide to Python programming with 15 chapters"
 ```
@@ -159,7 +160,7 @@ uv run kimi-writer.py "Write a comprehensive guide to Python programming with 15
 ### Real-Time Streaming
 Watch the agent think and write in real-time:
 - 🧠 **Reasoning Stream**: See the agent's thought process as it plans
-- 💬 **Content Stream**: Watch stories being written character by character
+- 💬 **Content Stream**: Watch chapters being written character by character
 - 🔧 **Tool Call Progress**: Live updates when generating large content (shows character/word count)
 - ⚡ **No Waiting**: Immediate feedback - no more staring at a blank screen
 
