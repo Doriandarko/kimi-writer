@@ -67,8 +67,7 @@ def check_dependencies():
             subprocess.run(
                 ["npm", "install"],
                 cwd="frontend",
-                check=True,
-                shell=True  # Needed for Windows
+                check=True
             )
             print_colored("   ✓ Frontend dependencies installed", Colors.GREEN)
         except subprocess.CalledProcessError:
@@ -90,8 +89,7 @@ def start_servers():
         backend_process = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"],
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True  # Needed for Windows
+            stderr=subprocess.PIPE
         )
         processes.append(("Backend", backend_process))
         print_colored("   ✓ Backend started (PID: {})".format(backend_process.pid), Colors.GREEN)
@@ -105,8 +103,7 @@ def start_servers():
             ["npm", "run", "dev"],
             cwd="frontend",
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True  # Needed for Windows
+            stderr=subprocess.PIPE
         )
         processes.append(("Frontend", frontend_process))
         print_colored("   ✓ Frontend started (PID: {})".format(frontend_process.pid), Colors.GREEN)
