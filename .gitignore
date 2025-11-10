@@ -26,6 +26,7 @@ virtualenv/
 *.swo
 *.sublime-project
 *.sublime-workspace
+.claude/
 
 # Generated content (AI-created projects)
 output/
@@ -41,4 +42,7 @@ Thumbs.db
 
 # Temporary files
 .context_summary_*.md
+
+# Test files
+test_*.py
 

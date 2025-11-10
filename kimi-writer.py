@@ -101,18 +101,34 @@ Examples:
     print("Kimi Writing Agent")
     print("=" * 60)
     print("\nEnter your writing request (or 'quit' to exit):")
-    print("Example: Create a collection of 15 sci-fi short stories\n")
-    
-    prompt = input("> ").strip()
-    
+    print("Example: Create a collection of 15 sci-fi short stories")
+    print("\nTip: For multi-line input, end with an empty line (press Enter twice)")
+    print("=" * 60 + "\n")
+
+    # Multi-line input support
+    lines = []
+    print("Enter your request (empty line to finish):")
+    while True:
+        try:
+            line = input()
+            if not line and lines:  # Empty line and we have content
+                break
+            if not line and not lines:  # First line is empty
+                continue
+            lines.append(line)
+        except EOFError:
+            break
+
+    prompt = "\n".join(lines).strip()
+
     if prompt.lower() in ['quit', 'exit', 'q']:
         print("Goodbye!")
         sys.exit(0)
-    
+
     if not prompt:
         print("Error: Empty prompt. Please provide a writing request.")
         sys.exit(1)
-    
+
     return prompt, False
 
 
@@ -431,57 +447,69 @@ def main():
             
             # Handle tool calls
             print(f"\n🔧 Model decided to call {len(message.tool_calls)} tool(s):")
-            
+
             for tool_call in message.tool_calls:
                 func_name = tool_call.function.name
                 args_str = tool_call.function.arguments
-                
+                result = None
+
                 try:
-                    args = json.loads(args_str)
-                except json.JSONDecodeError:
-                    args = {}
-                
-                print(f"\n  → {func_name}")
-                print(f"    Arguments: {json.dumps(args, ensure_ascii=False, indent=6)}")
-                
-                # Get the tool implementation
-                tool_func = tool_map.get(func_name)
-                
-                if not tool_func:
-                    result = f"Error: Unknown tool '{func_name}'"
+                    try:
+                        args = json.loads(args_str)
+                    except json.JSONDecodeError:
+                        args = {}
+
+                    print(f"\n  → {func_name}")
+                    print(f"    Arguments: {json.dumps(args, ensure_ascii=False, indent=6)}")
+
+                    # Get the tool implementation
+                    tool_func = tool_map.get(func_name)
+
+                    if not tool_func:
+                        result = f"Error: Unknown tool '{func_name}'"
+                        print(f"    ✗ {result}")
+                    else:
+                        # Special handling for compress_context (needs extra params)
+                        if func_name == "compress_context":
+                            result_data = compress_context_impl(
+                                messages=messages,
+                                client=client,
+                                model=MODEL_NAME,
+                                keep_recent=10
+                            )
+                            result = result_data.get("message", "Compression completed")
+
+                            # Update messages with compressed version
+                            if "compressed_messages" in result_data:
+                                messages = result_data["compressed_messages"]
+                        else:
+                            # Call the tool with its arguments
+                            result = tool_func(**args)
+
+                        # Print result (truncate if too long)
+                        if len(str(result)) > 200:
+                            print(f"    ✓ {str(result)[:200]}...")
+                        else:
+                            print(f"    ✓ {result}")
+
+                except Exception as tool_error:
+                    # Catch any exception during tool execution
+                    result = f"Error executing tool '{func_name}': {str(tool_error)}"
                     print(f"    ✗ {result}")
-                else:
-                    # Special handling for compress_context (needs extra params)
-                    if func_name == "compress_context":
-                        result_data = compress_context_impl(
-                            messages=messages,
-                            client=client,
-                            model=MODEL_NAME,
-                            keep_recent=10
-                        )
-                        result = result_data.get("message", "Compression completed")
-                        
-                        # Update messages with compressed version
-                        if "compressed_messages" in result_data:
-                            messages = result_data["compressed_messages"]
-                    else:
-                        # Call the tool with its arguments
-                        result = tool_func(**args)
-                    
-                    # Print result (truncate if too long)
-                    if len(str(result)) > 200:
-                        print(f"    ✓ {str(result)[:200]}...")
-                    else:
-                        print(f"    ✓ {result}")
-                
-                # Add tool result to messages
-                tool_message = {
-                    "role": "tool",
-                    "tool_call_id": tool_call.id,
-                    "name": func_name,
-                    "content": str(result)
-                }
-                messages.append(tool_message)
+
+                finally:
+                    # ALWAYS add tool result to messages, even if there was an error
+                    # This ensures every tool_call_id gets a response
+                    if result is None:
+                        result = f"Error: Tool '{func_name}' returned no result"
+
+                    tool_message = {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "name": func_name,
+                        "content": str(result)
+                    }
+                    messages.append(tool_message)
         
         except KeyboardInterrupt:
             print("\n\n⚠️  Interrupted by user. Saving context...")
