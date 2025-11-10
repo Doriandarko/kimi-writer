@@ -1,12 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Crimson+Text:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    background-color: white;
-    color: #111827;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: #fefefe;
+    color: #1a1a1a;
+    font-family: 'Crimson Text', Georgia, serif;
+    font-feature-settings: "rlig" 1, "calt" 1, "liga" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
   }
 }
 
@@ -14,23 +28,30 @@
   /* Custom component styles can go here */
 }
 
-/* Custom scrollbar styles */
+/* Custom scrollbar styles - monochromatic theme */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background-color: #f3f4f6;
+  background-color: #fefefe;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #9ca3af;
-  border-radius: 0.375rem;
+  background-color: #d1d1d8;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #6b7280;
+  background-color: #a8a8b4;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d1d8 #fefefe;
 }
 
 /* Markdown content styles */

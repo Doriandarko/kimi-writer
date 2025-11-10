@@ -1,23 +1,50 @@
 /**
  * Home Page
  *
- * Landing page with project creation and quick access to recent projects.
+ * Redesigned landing page with integrated project creation.
  */
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Plus, Clock, ArrowRight } from 'lucide-react';
-import { ConfigPanel } from '../components/ConfigPanel';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ProjectsSidebar } from '../components/ProjectsSidebar';
+import { StyleCard } from '../components/StyleCard';
+import { QualityControlSettings } from '../components/QualityControlSettings';
 import { useNovelStore } from '../store/novelStore';
 import * as api from '../services/api';
 
+const NOVEL_LENGTHS = [
+  { value: 'short_story', label: 'Short Story', chapters: 3 },
+  { value: 'novella', label: 'Novella', chapters: 8 },
+  { value: 'novel', label: 'Novel', chapters: 15 },
+  { value: 'long_novel', label: 'Long Novel', chapters: 30 },
+  { value: 'ai_decide', label: "Kimi's Choice", chapters: '?' },
+];
+
 export function Home() {
   const navigate = useNavigate();
-  const [showConfig, setShowConfig] = useState(false);
-  const [writingSamples, setWritingSamples] = useState([]);
-  const [recentProjects, setRecentProjects] = useState([]);
   const [loading, setLoading] = useState(false);
   const { setError } = useNovelStore();
+
+  // Form state
+  const [premise, setPremise] = useState('');
+  const [showTitle, setShowTitle] = useState(false);
+  const [title, setTitle] = useState('');
+  const [showGenre, setShowGenre] = useState(false);
+  const [genre, setGenre] = useState('');
+  const [showLength, setShowLength] = useState(false);
+  const [length, setLength] = useState('ai_decide');
+  const [styleCards, setStyleCards] = useState([
+    { name: '', sample: '' },
+    { name: '', sample: '' },
+    { name: '', sample: '' },
+  ]);
+  const [requirePlanApproval, setRequirePlanApproval] = useState(true);
+  const [requireChapterApproval, setRequireChapterApproval] = useState(false);
+  const [qualityConfig, setQualityConfig] = useState({
+    max_plan_critique_iterations: 2,
+    max_write_critique_iterations: 2,
+  });
 
   useEffect(() => {
     loadData();
@@ -25,22 +52,35 @@ export function Home() {
 
   const loadData = async () => {
     try {
-      // Load writing samples
-      const samplesData = await api.listWritingSamples();
-      setWritingSamples(samplesData.samples || []);
-
-      // Load recent projects
-      const projectsData = await api.listProjects();
-      setRecentProjects((projectsData.projects || []).slice(0, 5));
+      // Any initial data loading can go here
     } catch (error) {
       console.error('Failed to load data:', error);
     }
   };
 
-  const handleCreateProject = async (config) => {
+  const handleCreateProject = async () => {
+    if (!premise.trim()) {
+      setError('Please enter a premise for your novel');
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // Find the first non-empty style card
+      const selectedStyle = styleCards.find(card => card.sample?.trim());
+
+      const config = {
+        project_name: title.trim() || undefined,
+        theme: premise.trim(),
+        novel_length: length === 'ai_decide' ? undefined : length,
+        genre: genre.trim() || undefined,
+        custom_writing_sample: selectedStyle?.sample || undefined,
+        require_plan_approval: requirePlanApproval,
+        require_chapter_approval: requireChapterApproval,
+        ...qualityConfig,
+      };
+
       const result = await api.createProject(config);
       navigate(`/workspace/${result.project_id}`);
     } catch (error) {
@@ -50,156 +90,257 @@ export function Home() {
     }
   };
 
+  const handleStyleCardChange = (index, value) => {
+    const newStyleCards = [...styleCards];
+    newStyleCards[index] = value;
+    setStyleCards(newStyleCards);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Kimi Writer</h1>
-                <p className="text-sm text-gray-600">Multi-Agent Novel Writing System</p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate('/projects')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-            >
-              <Clock className="w-4 h-4" />
-              Browse Projects
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="flex h-screen bg-pearl-50 overflow-hidden">
+      {/* Projects Sidebar */}
+      <ProjectsSidebar currentProjectId={null} />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        {!showConfig ? (
-          <div className="space-y-12">
-            {/* Hero Section */}
-            <div className="text-center max-w-3xl mx-auto">
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                Write Your Novel with AI
-              </h2>
-              <p className="text-lg text-gray-600 mb-8">
-                Harness the power of multi-agent AI collaboration to create compelling
-                stories. From planning to final draft, our autonomous agents work together
-                to bring your ideas to life.
-              </p>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="bg-pearl-50 border-b border-obsidian-200 px-12 py-8">
+          <h1 className="text-5xl font-serif font-bold text-obsidian-900 tracking-tight">
+            Kimi Writer Tau
+          </h1>
+          <p className="text-sm font-body text-obsidian-600 mt-2 tracking-wide">
+            Multi-Agent Novel Writing System
+          </p>
+        </header>
+
+        {/* Scrollable Content */}
+        <main className="flex-1 overflow-y-auto px-12 py-8">
+          <div className="max-w-4xl mx-auto space-y-8">
+            {/* Premise Section */}
+            <div className="relative">
+              <div className="flex items-start justify-between mb-3">
+                <label className="block text-sm font-body font-semibold text-obsidian-700 tracking-wide uppercase">
+                  Premise
+                </label>
+                <QualityControlSettings
+                  config={qualityConfig}
+                  onChange={setQualityConfig}
+                />
+              </div>
+              <textarea
+                value={premise}
+                onChange={(e) => setPremise(e.target.value)}
+                placeholder="Describe your story idea... What is your novel about?"
+                rows={8}
+                className="w-full px-5 py-4 bg-pearl-50 border-2 border-obsidian-300 rounded-lg text-base font-body text-obsidian-900 placeholder-obsidian-400 focus:outline-none focus:ring-2 focus:ring-obsidian-600 focus:border-obsidian-600 transition-all resize-none shadow-pearl"
+              />
+            </div>
+
+            {/* Toggleable Options */}
+            <div className="flex gap-4">
+              {/* Title Toggle */}
               <button
-                onClick={() => setShowConfig(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 text-lg font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+                onClick={() => setShowTitle(!showTitle)}
+                className={`flex-1 px-5 py-3 rounded-lg border-2 transition-all font-serif font-medium ${
+                  showTitle
+                    ? 'bg-obsidian-900 text-pearl-50 border-obsidian-900'
+                    : 'bg-pearl-100 text-obsidian-700 border-obsidian-300 hover:border-obsidian-500'
+                }`}
               >
-                <Plus className="w-5 h-5" />
-                Start New Project
+                Add Title
+              </button>
+
+              {/* Genre Toggle */}
+              <button
+                onClick={() => setShowGenre(!showGenre)}
+                className={`flex-1 px-5 py-3 rounded-lg border-2 transition-all font-serif font-medium ${
+                  showGenre
+                    ? 'bg-obsidian-900 text-pearl-50 border-obsidian-900'
+                    : 'bg-pearl-100 text-obsidian-700 border-obsidian-300 hover:border-obsidian-500'
+                }`}
+              >
+                Add Genre
+              </button>
+
+              {/* Length Toggle */}
+              <button
+                onClick={() => setShowLength(!showLength)}
+                className={`flex-1 px-5 py-3 rounded-lg border-2 transition-all font-serif font-medium ${
+                  showLength
+                    ? 'bg-obsidian-900 text-pearl-50 border-obsidian-900'
+                    : 'bg-pearl-100 text-obsidian-700 border-obsidian-300 hover:border-obsidian-500'
+                }`}
+              >
+                Customize Length
               </button>
             </div>
 
-            {/* Features */}
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              <div className="bg-white rounded-lg p-6 shadow-md">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">📝</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Intelligent Planning
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  AI agents create detailed outlines, character profiles, and story
-                  structures tailored to your theme.
-                </p>
+            {/* Collapsible Fields */}
+            {showTitle && (
+              <div className="animate-in slide-in-from-top">
+                <label className="block text-sm font-body font-semibold text-obsidian-700 mb-2 tracking-wide uppercase">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Leave empty for Kimi's Choice"
+                  className="w-full px-4 py-3 bg-pearl-50 border border-obsidian-300 rounded-lg text-base font-body text-obsidian-900 placeholder-obsidian-400 focus:outline-none focus:ring-1 focus:ring-obsidian-600 focus:border-obsidian-600 transition-all"
+                />
+                {!title && (
+                  <p className="mt-2 text-xs text-obsidian-500 font-body italic">
+                    Kimi's Choice
+                  </p>
+                )}
               </div>
+            )}
 
-              <div className="bg-white rounded-lg p-6 shadow-md">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">✍️</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Iterative Writing
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Each chapter is written, critiqued, and refined by specialized agents
-                  to ensure quality and consistency.
-                </p>
+            {showGenre && (
+              <div className="animate-in slide-in-from-top">
+                <label className="block text-sm font-body font-semibold text-obsidian-700 mb-2 tracking-wide uppercase">
+                  Genre
+                </label>
+                <input
+                  type="text"
+                  value={genre}
+                  onChange={(e) => setGenre(e.target.value)}
+                  placeholder="Leave empty for Kimi's Choice"
+                  className="w-full px-4 py-3 bg-pearl-50 border border-obsidian-300 rounded-lg text-base font-body text-obsidian-900 placeholder-obsidian-400 focus:outline-none focus:ring-1 focus:ring-obsidian-600 focus:border-obsidian-600 transition-all"
+                />
+                {!genre && (
+                  <p className="mt-2 text-xs text-obsidian-500 font-body italic">
+                    Kimi's Choice
+                  </p>
+                )}
               </div>
+            )}
 
-              <div className="bg-white rounded-lg p-6 shadow-md">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">🎯</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Full Control
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Review and approve plans and chapters, or let the system work
-                  autonomously. You decide.
-                </p>
+            {showLength && (
+              <div className="animate-in slide-in-from-top">
+                <label className="block text-sm font-body font-semibold text-obsidian-700 mb-2 tracking-wide uppercase">
+                  Novel Length
+                </label>
+                <select
+                  value={length}
+                  onChange={(e) => setLength(e.target.value)}
+                  className="w-full px-4 py-3 bg-pearl-50 border border-obsidian-300 rounded-lg text-base font-body text-obsidian-900 focus:outline-none focus:ring-1 focus:ring-obsidian-600 focus:border-obsidian-600 transition-all"
+                >
+                  {NOVEL_LENGTHS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label} ({option.chapters} chapters)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Writing Style Cards */}
+            <div>
+              <label className="block text-sm font-body font-semibold text-obsidian-700 mb-4 tracking-wide uppercase">
+                Writing Style
+              </label>
+              <div className="grid grid-cols-3 gap-4">
+                {styleCards.map((card, index) => (
+                  <StyleCard
+                    key={index}
+                    index={index}
+                    value={card}
+                    onChange={(value) => handleStyleCardChange(index, value)}
+                  />
+                ))}
               </div>
             </div>
 
-            {/* Recent Projects */}
-            {recentProjects.length > 0 && (
-              <div className="max-w-5xl mx-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900">Recent Projects</h3>
-                  <button
-                    onClick={() => navigate('/projects')}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                  >
-                    View All
-                  </button>
-                </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recentProjects.map((project) => (
-                    <button
-                      key={project.project_id}
-                      onClick={() => navigate(`/workspace/${project.project_id}`)}
-                      className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow text-left group"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                          {project.project_name}
-                        </h4>
-                        <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                        {project.theme}
-                      </p>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span className="px-2 py-1 bg-gray-100 rounded">
-                          {project.phase}
-                        </span>
-                        <span>{project.progress_percentage.toFixed(0)}%</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="max-w-4xl mx-auto">
-            <ConfigPanel
-              writingSamples={writingSamples}
-              onSave={handleCreateProject}
-              onCancel={() => setShowConfig(false)}
-              loading={loading}
-              mode="create"
-            />
-          </div>
-        )}
-      </main>
+            {/* Approval Checkpoints */}
+            <div>
+              <label className="block text-sm font-body font-semibold text-obsidian-700 mb-4 tracking-wide uppercase">
+                Approval Checkpoints
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={requirePlanApproval}
+                      onChange={(e) => setRequirePlanApproval(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-6 h-6 border-2 border-obsidian-400 rounded-md peer-checked:bg-obsidian-900 peer-checked:border-obsidian-900 transition-all flex items-center justify-center">
+                      {requirePlanApproval && (
+                        <svg className="w-4 h-4 text-pearl-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-body font-medium text-obsidian-900">
+                      Require Plan Approval
+                    </div>
+                    <p className="text-xs text-obsidian-600 font-body">
+                      Pause after planning phase for manual review
+                    </p>
+                  </div>
+                </label>
 
-      {/* Footer */}
-      <footer className="mt-20 py-8 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-600">
-          <p>Powered by Moonshot AI • Built with React & FastAPI</p>
-        </div>
-      </footer>
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={requireChapterApproval}
+                      onChange={(e) => setRequireChapterApproval(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-6 h-6 border-2 border-obsidian-400 rounded-md peer-checked:bg-obsidian-900 peer-checked:border-obsidian-900 transition-all flex items-center justify-center">
+                      {requireChapterApproval && (
+                        <svg className="w-4 h-4 text-pearl-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-body font-medium text-obsidian-900">
+                      Require Chapter Approval
+                    </div>
+                    <p className="text-xs text-obsidian-600 font-body">
+                      Pause after each chapter for manual review
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Begin Writing Button */}
+            <div className="pt-4 pb-8">
+              <button
+                onClick={handleCreateProject}
+                disabled={loading || !premise.trim()}
+                className="group relative w-full px-8 py-6 bg-pearlescent hover:bg-pearlescent-hover bg-[length:200%_200%] rounded-lg border-2 border-obsidian-300 hover:border-obsidian-400 transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-pearl-lg hover:shadow-obsidian overflow-hidden"
+                style={{
+                  animation: 'shimmer-slow 5s ease-in-out infinite paused',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.animation = 'shimmer-slow 5s ease-in-out infinite running';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.animation = 'shimmer-slow 5s ease-in-out infinite paused';
+                }}
+              >
+                <span className="relative z-10 block text-center">
+                  <span className="block text-2xl font-serif font-bold text-obsidian-900 mb-1">
+                    {loading ? 'Creating...' : 'Begin Writing'}
+                  </span>
+                  <span className="block text-xs font-body text-obsidian-600 tracking-widest uppercase">
+                    Start your novel journey
+                  </span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

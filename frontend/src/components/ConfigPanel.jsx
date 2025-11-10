@@ -8,11 +8,11 @@ import { useState, useEffect } from 'react';
 import { Settings, Save, X, AlertCircle } from 'lucide-react';
 
 const NOVEL_LENGTHS = [
-  { value: 'flash_fiction', label: 'Flash Fiction', chapters: 1 },
-  { value: 'short_story', label: 'Short Story', chapters: 3 },
-  { value: 'novelette', label: 'Novelette', chapters: 5 },
-  { value: 'novella', label: 'Novella', chapters: 8 },
-  { value: 'novel', label: 'Novel', chapters: 12 },
+  { value: 'short_story', label: 'Short Story', chapters: 3, words: '3k-10k' },
+  { value: 'novella', label: 'Novella', chapters: 8, words: '20k-50k' },
+  { value: 'novel', label: 'Novel', chapters: 15, words: '50k-110k' },
+  { value: 'long_novel', label: 'Long Novel', chapters: 30, words: '110k-200k' },
+  { value: 'ai_decide', label: 'Let AI Decide', chapters: '?', words: 'Variable' },
 ];
 
 export function ConfigPanel({

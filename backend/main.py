@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -86,8 +86,11 @@ if os.getenv("ENABLE_CORS", "true").lower() == "true":
 # Mount API routes
 app.include_router(routes.router, prefix="/api")
 
-# WebSocket endpoint
-app.add_websocket_route("/ws/{project_id}", websocket_endpoint)
+# WebSocket endpoint using decorator for proper parameter injection
+@app.websocket("/ws/{project_id}")
+async def websocket_route(websocket: WebSocket, project_id: str):
+    """WebSocket route wrapper to properly inject path parameters."""
+    await websocket_endpoint(websocket, project_id)
 
 
 # Serve frontend static files in production

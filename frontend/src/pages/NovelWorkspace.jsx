@@ -209,44 +209,44 @@ export function NovelWorkspace() {
 
   if (!projectConfig || !projectState) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400">Loading project...</div>
+      <div className="min-h-screen flex items-center justify-center bg-pearl-50">
+        <div className="text-obsidian-500 font-body">Loading project...</div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-pearl-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
-        <div className="px-4 py-4">
+      <header className="bg-pearl-50 border-b border-obsidian-200 flex-shrink-0">
+        <div className="px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/projects')}
-                className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+                className="p-2 hover:bg-pearl-200 rounded-md transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 text-obsidian-700" />
               </button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="text-2xl font-serif font-bold text-obsidian-900">
                   {projectConfig.project_name}
                 </h1>
-                <p className="text-sm text-gray-600 line-clamp-1">
+                <p className="text-sm font-body text-obsidian-600 line-clamp-1 mt-0.5">
                   {projectConfig.theme}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               {/* Connection Status */}
-              <div className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-sm font-body">
                 <div
                   className={`w-2 h-2 rounded-full ${
-                    isConnected ? 'bg-green-600' : 'bg-red-600'
+                    isConnected ? 'bg-obsidian-900' : 'bg-obsidian-400'
                   }`}
                 />
-                <span className="text-gray-600">
+                <span className="text-obsidian-600">
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
@@ -255,7 +255,7 @@ export function NovelWorkspace() {
               {!isGenerating && !isPaused && (
                 <button
                   onClick={handleStart}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-serif font-medium text-pearl-50 bg-obsidian-900 rounded-md hover:bg-obsidian-800 transition-colors"
                 >
                   <Play className="w-4 h-4" />
                   Start Generation
@@ -265,7 +265,7 @@ export function NovelWorkspace() {
               {isGenerating && !isPaused && (
                 <button
                   onClick={handlePause}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-yellow-600 rounded-md hover:bg-yellow-700 transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-serif font-medium text-obsidian-900 bg-pearl-200 border border-obsidian-300 rounded-md hover:bg-pearl-300 transition-colors"
                 >
                   <Pause className="w-4 h-4" />
                   Pause
@@ -275,7 +275,7 @@ export function NovelWorkspace() {
               {isPaused && (
                 <button
                   onClick={handleResume}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-serif font-medium text-pearl-50 bg-obsidian-900 rounded-md hover:bg-obsidian-800 transition-colors"
                 >
                   <Play className="w-4 h-4" />
                   Resume
@@ -289,7 +289,7 @@ export function NovelWorkspace() {
       {/* Main Content */}
       <div className="flex-1 overflow-hidden flex">
         {/* Left Sidebar - Progress */}
-        <aside className="w-96 border-r border-gray-200 bg-white overflow-y-auto p-4">
+        <aside className="w-96 border-r border-obsidian-200 bg-pearl-100 overflow-y-auto p-5">
           <ProgressDashboard
             phase={currentPhase}
             progress={progress}
@@ -308,14 +308,14 @@ export function NovelWorkspace() {
         {/* Main Area */}
         <main className="flex-1 overflow-hidden flex flex-col">
           {/* Tabs */}
-          <div className="border-b border-gray-200 bg-white">
-            <div className="flex gap-4 px-4">
+          <div className="border-b border-obsidian-200 bg-pearl-100">
+            <div className="flex gap-1 px-5">
               <button
                 onClick={() => setActiveTab('live')}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+                className={`flex items-center gap-2 px-5 py-3 border-b-2 transition-all font-serif ${
                   activeTab === 'live'
-                    ? 'border-blue-600 text-blue-600 font-medium'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                    ? 'border-obsidian-900 text-obsidian-900 font-semibold'
+                    : 'border-transparent text-obsidian-600 hover:text-obsidian-900'
                 }`}
               >
                 <Activity className="w-4 h-4" />
@@ -323,10 +323,10 @@ export function NovelWorkspace() {
               </button>
               <button
                 onClick={() => setActiveTab('files')}
-                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
+                className={`flex items-center gap-2 px-5 py-3 border-b-2 transition-all font-serif ${
                   activeTab === 'files'
-                    ? 'border-blue-600 text-blue-600 font-medium'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                    ? 'border-obsidian-900 text-obsidian-900 font-semibold'
+                    : 'border-transparent text-obsidian-600 hover:text-obsidian-900'
                 }`}
               >
                 <FileText className="w-4 h-4" />
@@ -336,7 +336,7 @@ export function NovelWorkspace() {
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 overflow-hidden p-4">
+          <div className="flex-1 overflow-hidden p-5 bg-pearl-50">
             {activeTab === 'live' ? (
               <StreamingOutput
                 content={content}
@@ -373,11 +373,11 @@ export function NovelWorkspace() {
 
       {/* Error Toast */}
       {error && (
-        <div className="fixed bottom-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg max-w-md">
-          <p className="text-sm font-medium">{error.message || error}</p>
+        <div className="fixed bottom-6 right-6 bg-obsidian-900 text-pearl-50 px-6 py-4 rounded-lg border border-obsidian-700 shadow-obsidian-lg max-w-md">
+          <p className="text-sm font-body">{error.message || error}</p>
           <button
             onClick={() => setError(null)}
-            className="mt-2 text-xs underline hover:no-underline"
+            className="mt-2 text-xs font-body underline hover:no-underline opacity-80 hover:opacity-100 transition-opacity"
           >
             Dismiss
           </button>
