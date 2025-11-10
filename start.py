@@ -10,6 +10,7 @@ import sys
 import subprocess
 import time
 import signal
+import webbrowser
 from pathlib import Path
 
 # Color codes for terminal output (works in VS Code terminal)
@@ -64,10 +65,11 @@ def check_dependencies():
         print_colored("   ⚠️  Frontend dependencies not installed", Colors.YELLOW)
         print_colored("   Installing frontend dependencies...", Colors.BLUE)
         try:
+            frontend_dir = Path("frontend").resolve()
             subprocess.run(
-                ["npm", "install"],
-                cwd="frontend",
-                check=True
+                f'cd /d "{frontend_dir}" && npm.cmd install',
+                check=True,
+                shell=True
             )
             print_colored("   ✓ Frontend dependencies installed", Colors.GREEN)
         except subprocess.CalledProcessError:
@@ -87,9 +89,7 @@ def start_servers():
         # Start backend
         print_colored("📡 Starting backend server on http://localhost:8000", Colors.BLUE)
         backend_process = subprocess.Popen(
-            [sys.executable, "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            [sys.executable, "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
         )
         processes.append(("Backend", backend_process))
         print_colored("   ✓ Backend started (PID: {})".format(backend_process.pid), Colors.GREEN)
@@ -98,21 +98,27 @@ def start_servers():
         time.sleep(2)
 
         # Start frontend
-        print_colored("\n🎨 Starting frontend server on http://localhost:5173", Colors.BLUE)
+        print_colored("\n🎨 Starting frontend server on http://localhost:5174", Colors.BLUE)
+        frontend_dir = Path("frontend").resolve()
         frontend_process = subprocess.Popen(
-            ["npm", "run", "dev"],
-            cwd="frontend",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            f'cd /d "{frontend_dir}" && npm.cmd run dev',
+            shell=True
         )
         processes.append(("Frontend", frontend_process))
         print_colored("   ✓ Frontend started (PID: {})".format(frontend_process.pid), Colors.GREEN)
+
+        # Wait for frontend to be ready
+        time.sleep(3)
+
+        # Open browser automatically
+        print_colored("\n🌐 Opening browser...", Colors.BLUE)
+        webbrowser.open("http://localhost:5174")
 
         # Print success message
         print_colored("\n" + "="*70, Colors.GREEN)
         print_colored("  ✨ System ready!", Colors.BOLD + Colors.GREEN)
         print_colored("="*70, Colors.GREEN)
-        print_colored("\n📍 Open your browser to: http://localhost:5173", Colors.BOLD + Colors.CYAN)
+        print_colored("\n📍 Browser opened to: http://localhost:5174", Colors.BOLD + Colors.CYAN)
         print_colored("📚 API Documentation: http://localhost:8000/docs", Colors.CYAN)
         print_colored("\n💡 Press Ctrl+C to stop both servers\n", Colors.YELLOW)
 
