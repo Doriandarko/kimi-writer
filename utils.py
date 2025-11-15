@@ -6,22 +6,43 @@ import json
 import httpx
 from typing import List, Dict, Any, Callable
 
-
+def get_model_name(base_url: str) -> str:
+    """
+    Returns the appropriate model name based on the API endpoint.
+    
+    OpenRouter requires the format "moonshotai/kimi-k2-thinking"
+    while the default Moonshot API uses "kimi-k2-thinking"
+    
+    Args:
+        base_url: The base URL for the API
+        
+    Returns:
+        The appropriate model name for the endpoint
+    """
+    if "openrouter" in base_url.lower():
+        return "moonshotai/kimi-k2-thinking"
+    return "kimi-k2-thinking"
+    
 def estimate_token_count(base_url: str, api_key: str, model: str, messages: List[Dict]) -> int:
     """
     Estimate the token count for the given messages using the Moonshot API.
     
-    Note: Token estimation uses api.moonshot.ai (not .cn)
+    Note: Token estimation is only available for Moonshot API endpoints.
+    OpenRouter does not support this endpoint, so we return 0 for OpenRouter.
     
     Args:
-        base_url: The base URL for the API (will be converted to .ai for token endpoint)
+        base_url: The base URL for the API
         api_key: The API key for authentication
         model: The model name
         messages: List of message dictionaries
         
     Returns:
-        Total token count
+        Total token count (0 if OpenRouter or estimation fails)
     """
+    # OpenRouter doesn't support token estimation endpoint
+    if "openrouter" in base_url.lower():
+        return 0
+    
     # Convert messages to serializable format (remove non-serializable objects)
     serializable_messages = []
     for msg in messages:
@@ -52,21 +73,25 @@ def estimate_token_count(base_url: str, api_key: str, model: str, messages: List
     token_base_url = base_url
     
     # Make the API call
-    with httpx.Client(
-        base_url=token_base_url,
-        headers={"Authorization": f"Bearer {api_key}"},
-        timeout=30.0
-    ) as client:
-        response = client.post(
-            "/tokenizers/estimate-token-count",
-            json={
-                "model": model,
-                "messages": serializable_messages
-            }
-        )
-        response.raise_for_status()
-        data = response.json()
-        return data.get("data", {}).get("total_tokens", 0)
+    try:
+        with httpx.Client(
+            base_url=token_base_url,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30.0
+        ) as client:
+            response = client.post(
+                "/tokenizers/estimate-token-count",
+                json={
+                    "model": model,
+                    "messages": serializable_messages
+                }
+            )
+            response.raise_for_status()
+            data = response.json()
+            return data.get("data", {}).get("total_tokens", 0)
+    except Exception:
+        # If estimation fails for any reason, return 0
+        return 0
 
 
 def get_tool_definitions() -> List[Dict[str, Any]]:

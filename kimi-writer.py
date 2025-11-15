@@ -21,7 +21,8 @@ from utils import (
     estimate_token_count, 
     get_tool_definitions, 
     get_tool_map,
-    get_system_prompt
+    get_system_prompt,
+    get_model_name
 )
 from tools.compression import compress_context_impl
 
@@ -30,7 +31,6 @@ from tools.compression import compress_context_impl
 MAX_ITERATIONS = 300
 TOKEN_LIMIT = 200000
 COMPRESSION_THRESHOLD = 180000  # Trigger compression at 90% of limit
-MODEL_NAME = "kimi-k2-thinking"
 BACKUP_INTERVAL = 50  # Save backup summary every N iterations
 
 
@@ -179,6 +179,7 @@ def main():
         sys.exit(1)
     
     base_url = os.getenv("MOONSHOT_BASE_URL", "https://api.moonshot.ai/v1")
+    MODEL_NAME = get_model_name(base_url)
     
     # Debug: Show that key is loaded (masked for security)
     if len(api_key) > 8:
@@ -236,8 +237,10 @@ def main():
         # Check token count before making API call
         try:
             token_count = estimate_token_count(base_url, api_key, MODEL_NAME, messages)
-            print(f"📊 Current tokens: {token_count:,}/{TOKEN_LIMIT:,} ({token_count/TOKEN_LIMIT*100:.1f}%)")
-            
+            if token_count > 0:
+                print(f"📊 Current tokens: {token_count:,}/{TOKEN_LIMIT:,} ({token_count/TOKEN_LIMIT*100:.1f}%)")
+            else:
+                print(f"📊 Token counting not available for this endpoint")
             # Trigger compression if approaching limit
             if token_count >= COMPRESSION_THRESHOLD:
                 print(f"\n⚠️  Approaching token limit! Compressing context...")
